@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI聊天界面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            height: 100%;
+            padding: 20px;
+        }
+
+        #chat-display {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #fff;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            margin: 5px 0;
+            padding: 5px;
+        }
+
+        .user-message::before {
+            content: "用户：";
+            font-weight: bold;
+        }
+
+        .bot-message::before {
+            content: "AI：";
+            font-weight: bold;
+        }
+
+        #chat-input-container {
+            display: flex;
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #send-button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #send-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #send-button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-display"></div>
+        <div id="chat-input-container">
+            <input type="text" id="chat-input" placeholder="给机器人说点什么吧...">
+            <button id="send-button" disabled>发送</button>
+        </div>
+    </div>
+
+    <script>
+        const chatDisplay = document.getElementById('chat-display');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+
+        const appendMessage = (message, isUser) => {
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            chatDisplay.appendChild(messageDiv);
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+        };
+
+        const toggleSendButton = (enabled) => {
+            sendButton.disabled = !enabled;
+        };
+
+        const sendMessage = async () => {
+            const userMessage = chatInput.value.trim();
+            if (!userMessage) return;
+
+            appendMessage(userMessage, true); // Display user message
+            chatInput.value = '';
+            toggleSendButton(false); // Disable button while waiting for response
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content: userMessage })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    appendMessage(data.content, false); // Display AI response
+                } else {
+                    appendMessage('Error: Failed to fetch response.', false);
+                }
+            } catch (error) {
+                appendMessage('Error: Unable to connect to the server.', false);
+            } finally {
+                toggleSendButton(true); // Re-enable button after response
+            }
+        };
+
+        chatInput.addEventListener('input', () => {
+            toggleSendButton(chatInput.value.trim().length > 0);
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter' && !sendButton.disabled) sendMessage();
+        });
+    </script>
+</body>
+</html>
