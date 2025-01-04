@@ -4,8 +4,8 @@ from openai import OpenAI
 
 class DeepSeek:
     def __init__(self):
-        self.api_key = "sk-edc20c136a9a4622b0e5a628a102c84e"
-        self.base_url = "https://api.deepseek.com"
+        self.api_key = ""
+        self.base_url = ""
         self.chat_history = []
         self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 
