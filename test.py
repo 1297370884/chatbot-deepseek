@@ -10,7 +10,7 @@ class DeepSeek:
         if content is None:
             return "没有输入问题，请重新提问"
 
-        client = OpenAI(api_key="sk-edc20c136a9a4622b0e5a628a102c84e", base_url="https://api.deepseek.com")
+        client = OpenAI(api_key="", base_url="https://api.deepseek.com")
         messages = {
             "role": role,
             "content": content
